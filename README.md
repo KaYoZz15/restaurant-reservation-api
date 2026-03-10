@@ -1,2 +1,8 @@
 # restaurant-reservation-api
-Node.js REST API for restaurant reservations with authentication, table management and menu.
+
+API REST en Node.js / Express pour la gestion des réservations d'un restaurant.
+
+## Installation
+
+```bash
+npm install
