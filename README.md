@@ -162,7 +162,7 @@ Les autres fonctionnalités (authentification, gestion des réservations, logiqu
 
 --- 
 
-# API Documentation
+# Auth/Admin (Adam)
 
 ## Authentification
 
@@ -318,24 +318,6 @@ pending → confirmed
     "id": 1,
     "status": "confirmed"
   }
-}
-```
-
----
-
-# Endpoint disponible
-
-## GET `/menu`
-
-Retourne la liste des plats disponibles du restaurant.
-
-#### Réponse
-
-```json
-{
-  "success": true,
-  "count": 4,
-  "data": []
 }
 ```
 
