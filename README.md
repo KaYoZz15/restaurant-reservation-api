@@ -161,19 +161,26 @@ Kevin a réalisé la mise en place complète du socle du projet :
 Les autres fonctionnalités (authentification, gestion des réservations, logique métier, etc.) seront implémentées par les autres membres du groupe.
 
 --- 
-Authentification
 
+# API Documentation
 
-L’API utilise JWT (JSON Web Token) pour sécuriser certaines routes.
+## Authentification
 
+L’API utilise **JWT (JSON Web Token)** pour sécuriser certaines routes.
+
+---
+
+## Inscription
+
+### POST `/signup`
+
+Permet de créer un compte utilisateur avec le rôle **client**.
+
+#### Exemple de requête
+
+```json
 POST /signup
-Permet de créer un compte utilisateur (rôle client).
 
-Exemple :
-
-POST /signup
-
-Body :
 {
   "email": "john@example.com",
   "password": "password123",
@@ -181,64 +188,87 @@ Body :
   "lname": "Doe",
   "phone": "0611223344"
 }
+```
 
-Le mot de passe est hashé avec bcrypt avant d’être enregistré en base.
+Le mot de passe est **hashé avec bcrypt** avant d’être enregistré en base de données.
 
-POST /login
-Permet à un utilisateur de se connecter et d’obtenir un token JWT.
+---
 
+## Connexion
 
-POST /login :
+### POST `/login`
 
-Body :
+Permet à un utilisateur de se connecter et d’obtenir un **token JWT**.
 
+#### Body
+
+```json
 {
   "email": "john@example.com",
   "password": "password123"
 }
+```
 
-Réponse :
+#### Réponse
 
+```json
 {
   "token": "JWT_TOKEN"
 }
-GET /me
+```
 
-Exemple de route protégée permettant de récupérer les informations de l’utilisateur connecté.
+---
 
-Header requis :
+## Route protégée
 
-Authorization: Bearer <token>
-Gestion des rôles
+### GET `/me`
+
+Permet de récupérer les informations de l’utilisateur connecté.
+
+#### Header requis
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+# Gestion des rôles
 
 Deux rôles existent dans le système :
 
-- client 
-- admin
+- `client`
+- `admin`
 
-Certaines routes sont réservées aux administrateurs.
+Certaines routes sont **réservées aux administrateurs**.
 
 Les contrôles d’accès sont réalisés via :
 
-authMiddleware
-requireRole('admin')
-Gestion des réservations (Admin)
+- `authMiddleware`
+- `requireRole('admin')`
 
-Les administrateurs peuvent consulter et valider les réservations.
+---
+
+# Gestion des réservations (Admin)
+
+Les administrateurs peuvent **consulter et valider les réservations**.
 
 Ces endpoints nécessitent :
 
-- Authorization: Bearer <token>
-- un utilisateur ayant le rôle admin.
+- Header `Authorization: Bearer <JWT_TOKEN>`
+- Un utilisateur ayant le rôle **admin**
 
+---
 
-GET /reservations
+## Récupérer toutes les réservations
+
+### GET `/reservations`
+
 Permet de récupérer toutes les réservations enregistrées dans le système.
 
-GET /reservations
+#### Exemple de réponse
 
-Exemple de réponse :
-
+```json
 {
   "success": true,
   "count": 1,
@@ -256,26 +286,31 @@ Exemple de réponse :
     }
   ]
 }
-PATCH /reservations/:id/validate
+```
 
-Permet à un administrateur de valider une réservation en attente.
+---
 
-PATCH /reservations/:id/validate
+## Valider une réservation
 
-Comportement :
+### PATCH `/reservations/:id/validate`
 
+Permet à un administrateur de **valider une réservation en attente**.
+
+#### Comportement
+
+```
 pending → confirmed
+```
 
-Contraintes :
+#### Contraintes
 
 - la réservation doit exister
+- une réservation déjà **confirmée** ne peut plus être modifiée
+- une réservation **cancelled** ne peut pas être confirmée
 
-- une réservation déjà confirmée ne peut plus être modifiée
+#### Exemple de réponse
 
-- une réservation cancelled ne peut pas être confirmée
-
-Exemple de réponse :
-
+```json
 {
   "success": true,
   "message": "Reservation validated successfully",
@@ -284,28 +319,35 @@ Exemple de réponse :
     "status": "confirmed"
   }
 }
-Endpoint disponible
-GET /menu
+```
 
+---
+
+# Endpoint disponible
+
+## GET `/menu`
 
 Retourne la liste des plats disponibles du restaurant.
-GET /menu
 
-Réponse :
+#### Réponse
 
+```json
 {
   "success": true,
   "count": 4,
   "data": []
 }
+```
 
-#Contribution
-Fonctionnalités implémentées par Adam : 
+---
 
-- authentification utilisateur (signup / login)
-- génération et vérification de JWT
-- gestion des rôles client / admin
-- protection des routes via middleware
-- consultation des réservations (admin)
-- validation des réservations (admin)
+# Contribution
 
+## Fonctionnalités implémentées par Adam
+
+- authentification utilisateur (`signup` / `login`)
+- génération et vérification de **JWT**
+- gestion des rôles **client / admin**
+- protection des routes via **middleware**
+- consultation des réservations (**admin**)
+- validation des réservations (**admin**)
