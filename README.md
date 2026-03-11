@@ -1,8 +1,8 @@
 ﻿# Restaurant Reservation API
 
-API REST développée avec **Node.js**, **Express** et **MySQL** permettant de gérer les réservation d'un restaurant.
+API REST developpee avec **Node.js**, **Express** et **MySQL** permettant de gerer les reservations d'un restaurant.
 
-Ce projet est réalisé dans le cadre d'un travail de groupe et vise Ã  mettre en place une architecture backend propre avec une base de donnée relationnelle et des endpoints REST.
+Ce projet est realise dans le cadre d'un travail de groupe et vise a mettre en place une architecture backend propre avec une base de donnees relationnelle et des endpoints REST.
 
 ---
 
@@ -36,7 +36,7 @@ npm install
 
 # Configuration
 
-Créer un fichier `.env` Ã  la racine du projet.
+Creer un fichier `.env` a la racine du projet.
 
 Exemple :
 
@@ -97,7 +97,7 @@ http://localhost:3000
 
 ---
 
-# Endpoint disponible
+# Endpoints disponibles
 
 ## GET /menu
 
@@ -116,6 +116,168 @@ Réponse :
   "success": true,
   "count": 4,
   "data": []
+}
+```
+
+## Endpoints réservation (tickets Arthur)
+
+Tous les endpoints ci-dessous nécessitent :
+
+```
+Authorization: Bearer <token_jwt>
+```
+
+### POST /reservations
+
+Crée une réservation pour l'utilisateur connecté.
+
+Body :
+
+```json
+{
+  "name": "Jean Dupont",
+  "phone": "0611223344",
+  "number_of_people": 4,
+  "reservation_date": "2026-03-20",
+  "reservation_time": "20:00",
+  "note": "Table proche fenetre"
+}
+```
+
+Réponse succès (201) :
+
+```json
+{
+  "success": true,
+  "message": "Reservation created successfully",
+  "data": {
+    "id": 12,
+    "user_id": 2,
+    "name": "Jean Dupont",
+    "phone": "0611223344",
+    "number_of_people": 4,
+    "reservation_date": "2026-03-20",
+    "reservation_time": "20:00:00",
+    "note": "Table proche fenetre",
+    "status": "pending",
+    "tables": [
+      {
+        "id": 3,
+        "table_number": "T3",
+        "seats": 4
+      }
+    ]
+  }
+}
+```
+
+Réponse erreur capacité (409) :
+
+```json
+{
+  "success": false,
+  "message": "Not enough capacity for this date and time"
+}
+```
+
+### GET /my-reservations
+
+Retourne toutes les réservations de l'utilisateur connecté.
+
+Exemple :
+
+```
+GET http://localhost:3000/my-reservations
+```
+
+Réponse succès (200) :
+
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "id": 12,
+      "user_id": 2,
+      "name": "Jean Dupont",
+      "phone": "0611223344",
+      "number_of_people": 4,
+      "reservation_date": "2026-03-20T00:00:00.000Z",
+      "reservation_time": "20:00:00",
+      "note": "Table proche fenetre",
+      "status": "pending",
+      "created_at": "2026-03-11T18:40:12.000Z",
+      "tables": [
+        {
+          "id": 3,
+          "table_number": "T3",
+          "seats": 4
+        }
+      ]
+    }
+  ]
+}
+```
+
+### PUT /reservations/:id
+
+Modifie une réservation existante (propriétaire uniquement, statut obligatoire : `pending`).
+
+Body :
+
+```json
+{
+  "name": "Jean Dupont",
+  "phone": "0611223344",
+  "number_of_people": 2,
+  "reservation_date": "2026-03-21",
+  "reservation_time": "19:30",
+  "note": "Mise a jour de la reservation"
+}
+```
+
+Réponse succès (200) :
+
+```json
+{
+  "success": true,
+  "message": "Reservation updated successfully",
+  "data": {
+    "id": 12,
+    "user_id": 2,
+    "name": "Jean Dupont",
+    "phone": "0611223344",
+    "number_of_people": 2,
+    "reservation_date": "2026-03-21",
+    "reservation_time": "19:30:00",
+    "note": "Mise a jour de la reservation",
+    "status": "pending",
+    "tables": [
+      {
+        "id": 1,
+        "table_number": "T1",
+        "seats": 2
+      }
+    ]
+  }
+}
+```
+
+### DELETE /reservations/:id
+
+Annule une réservation existante (propriétaire uniquement).
+
+Réponse succès (200) :
+
+```json
+{
+  "success": true,
+  "message": "Reservation cancelled successfully",
+  "data": {
+    "id": 12,
+    "status": "cancelled"
+  }
 }
 ```
 
@@ -172,4 +334,4 @@ D’autres fonctionnalités (authentification complète, gestion avancée des r�
 
 # Auteur
 
-Kevin
+Arthur
