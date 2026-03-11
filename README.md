@@ -1,8 +1,8 @@
-# Restaurant Reservation API
+﻿# Restaurant Reservation API
 
-API REST développée avec **Node.js**, **Express** et **MySQL** permettant de gérer les réservations d’un restaurant.
+API REST développée avec **Node.js**, **Express** et **MySQL** permettant de gérer les réservation d'un restaurant.
 
-Ce projet est réalisé dans le cadre d’un travail de groupe et vise à mettre en place une architecture backend propre avec une base de données relationnelle et des endpoints REST.
+Ce projet est réalisé dans le cadre d'un travail de groupe et vise Ã  mettre en place une architecture backend propre avec une base de donnée relationnelle et des endpoints REST.
 
 ---
 
@@ -36,7 +36,7 @@ npm install
 
 # Configuration
 
-Créer un fichier `.env` à la racine du projet.
+Créer un fichier `.env` Ã  la racine du projet.
 
 Exemple :
 
@@ -158,7 +158,15 @@ Kevin a réalisé la mise en place complète du socle du projet :
 - Implémentation du premier endpoint API **GET /menu**
 - Mise en place de la **gestion de projet et organisation des tâches avec Jira**
 
-Les autres fonctionnalités (authentification, gestion des réservations, logique métier, etc.) seront implémentées par les autres membres du groupe.
+Arthur a réalisé l’implémentation des fonctionnalités de gestion des réservations côté client :
+
+- Mise en place de l’**authentification JWT** sur les endpoints de réservation
+- Implémentation des endpoints **POST /reservations** et **GET /my-reservations**
+- Ajout de la logique métier de **vérification de capacité** et d’**attribution automatique des tables**
+- Implémentation des endpoints **PUT /reservations/:id** et **DELETE /reservations/:id**
+- Ajout des règles de sécurité métier : **vérification du propriétaire** et modification autorisée uniquement en statut **pending**
+
+D’autres fonctionnalités (authentification complète, gestion avancée des réservations, logique métier, etc.) pourront être implémentées par les autres membres du groupe.
 
 ---
 
