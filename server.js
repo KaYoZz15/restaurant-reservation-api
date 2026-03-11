@@ -2,6 +2,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 const db = require('./config/database');
 const menuRoutes = require('./routes/menuRoutes');
+const authRoutes = require('./routes/authRoutes');
+const reservationRoutes = require('./routes/reservationRoutes');
 
 dotenv.config();
 
@@ -9,6 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use('/', reservationRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -17,6 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/menu', menuRoutes);
+app.use('/', authRoutes);
 
 async function startServer() {
   try {

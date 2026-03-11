@@ -79,8 +79,8 @@ CREATE TABLE reservation_tables (
 -- =========================
 
 INSERT INTO users (email, password_hash, fname, lname, phone, role) VALUES
-('admin@restaurant.com', 'hashedpassword', 'Admin', 'Restaurant', '0600000000', 'admin'),
-('client@test.com', 'hashedpassword', 'Jean', 'Dupont', '0611223344', 'client');
+('admin@restaurant.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi4u5M6J6p4cWfZf4w5D6q7Q3tq3f7y', 'Admin', 'Restaurant', '0600000000', 'admin'),
+('client@test.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi4u5M6J6p4cWfZf4w5D6q7Q3tq3f7y', 'Jean', 'Dupont', '0611223344', 'client');
 
 INSERT INTO restaurant_tables (table_number, seats) VALUES
 ('T1', 2),

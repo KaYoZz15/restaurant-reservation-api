@@ -165,3 +165,49 @@ Les autres fonctionnalités (authentification, gestion des réservations, logiqu
 # Auteur
 
 Kevin
+## Authentication
+
+### Required environment variables
+
+```env
+JWT_SECRET=change_this_secret
+JWT_EXPIRES_IN=24h
+```
+
+### Endpoints
+
+#### POST /signup
+Create a new client account.
+
+Example body:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123",
+  "fname": "John",
+  "lname": "Doe",
+  "phone": "0611223344"
+}
+```
+
+#### POST /login
+Authenticate a user and return a JWT.
+
+Example body:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+#### GET /me
+Protected route example.
+
+Header:
+
+```http
+Authorization: Bearer <token>
+```
