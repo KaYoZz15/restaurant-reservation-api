@@ -160,8 +160,176 @@ Kevin a réalisé la mise en place complète du socle du projet :
 
 Les autres fonctionnalités (authentification, gestion des réservations, logique métier, etc.) seront implémentées par les autres membres du groupe.
 
+--- 
+
+# Auth/Admin (Adam)
+
+## Authentification
+
+L’API utilise **JWT (JSON Web Token)** pour sécuriser certaines routes.
+
 ---
 
-# Auteur
+## Inscription
 
-Kevin
+### POST `/signup`
+
+Permet de créer un compte utilisateur avec le rôle **client**.
+
+#### Exemple de requête
+
+```json
+POST /signup
+
+{
+  "email": "john@example.com",
+  "password": "password123",
+  "fname": "John",
+  "lname": "Doe",
+  "phone": "0611223344"
+}
+```
+
+Le mot de passe est **hashé avec bcrypt** avant d’être enregistré en base de données.
+
+---
+
+## Connexion
+
+### POST `/login`
+
+Permet à un utilisateur de se connecter et d’obtenir un **token JWT**.
+
+#### Body
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+#### Réponse
+
+```json
+{
+  "token": "JWT_TOKEN"
+}
+```
+
+---
+
+## Route protégée
+
+### GET `/me`
+
+Permet de récupérer les informations de l’utilisateur connecté.
+
+#### Header requis
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+# Gestion des rôles
+
+Deux rôles existent dans le système :
+
+- `client`
+- `admin`
+
+Certaines routes sont **réservées aux administrateurs**.
+
+Les contrôles d’accès sont réalisés via :
+
+- `authMiddleware`
+- `requireRole('admin')`
+
+---
+
+# Gestion des réservations (Admin)
+
+Les administrateurs peuvent **consulter et valider les réservations**.
+
+Ces endpoints nécessitent :
+
+- Header `Authorization: Bearer <JWT_TOKEN>`
+- Un utilisateur ayant le rôle **admin**
+
+---
+
+## Récupérer toutes les réservations
+
+### GET `/reservations`
+
+Permet de récupérer toutes les réservations enregistrées dans le système.
+
+#### Exemple de réponse
+
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "name": "Jean Dupont",
+      "phone": "0600000000",
+      "number_of_people": 4,
+      "reservation_date": "2026-03-20",
+      "reservation_time": "19:30:00",
+      "note": "Table près de la fenêtre",
+      "status": "pending"
+    }
+  ]
+}
+```
+
+---
+
+## Valider une réservation
+
+### PATCH `/reservations/:id/validate`
+
+Permet à un administrateur de **valider une réservation en attente**.
+
+#### Comportement
+
+```
+pending → confirmed
+```
+
+#### Contraintes
+
+- la réservation doit exister
+- une réservation déjà **confirmée** ne peut plus être modifiée
+- une réservation **cancelled** ne peut pas être confirmée
+
+#### Exemple de réponse
+
+```json
+{
+  "success": true,
+  "message": "Reservation validated successfully",
+  "data": {
+    "id": 1,
+    "status": "confirmed"
+  }
+}
+```
+
+---
+
+# Contribution
+
+## Fonctionnalités implémentées par Adam
+
+- authentification utilisateur (`signup` / `login`)
+- génération et vérification de **JWT**
+- gestion des rôles **client / admin**
+- protection des routes via **middleware**
+- consultation des réservations (**admin**)
+- validation des réservations (**admin**)

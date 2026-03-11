@@ -1,0 +1,98 @@
+CQUE JAI COMPRIS
+
+FICHIER Package.json
+
+Ajout des dépendances d'auth
+: dependencies : 
+
+bcryptjs: sert à hasher le mot de passe au signup et à comparer le mot de passe au login. 
+
+jsonwebtoken :sert à générer un token JWT au login puis à vérifier ce token dans le middleware.
+
+
+FICHIER SERVER.JS :
+
+brncheemnt des routes d'auth
+authroutes
+
+
+
+FICHIER CONTROLLERS/AUTHCONTROLLER.js
+Nouveau fichier
+Le contrôleur peut :
+- chercher un utilisateur
+- en créer un
+- sécuriser le mot de passe
+- générer un token
+
+Une regex pr verifier vite fait si
+email = forme valide (@)
+
+Payload JWT : id/email/role
+
+Fonction pr generer token
+
+Fonction pr retirer le hash des reponses avant denvoyer au coté client
+
+Fonction validateSigneupBody ;
+pour verifier que email est bien un email, que mdp a au moins 6 caractères,
+que tous les champs existent.
+
+ENDPOINT POST SIGNUP
+
+const normalized email pr faire passer tout en minuscule (pr eviter les doublons)
+
+const existingUser pr verifier que lemail n'existe pas déjà 
+
+ainsi impossible de créer deux comptes avec le même email.
+
+const PasswordHash avec 10 comme nombre de round bcrypt
+
+En stock (uniquement une version hashée)
+
+ENDPOINT POST Login
+
+on cherche l'user a partir du mail netoyé (normalized)
+
+const isPasswordValid
+: bcrypt va comparer le mot de passe brut envoyé avec le hash stocké en base
+
+ainsi on valide l'auth sans jamais avoir besoin de connaître le mot de passe d’origine
+
+const token : le login cree un JWT contenant id + role du user
+
+
+
+FICHIERS USERMODEL.JS
+
+findByEmail : cherche un user par son mail
+utilisée dans signup(prévenir des doublons) et login
+
+findbyID : cherche user par son id
+
+createUser : insere un utilisateur dans la table users relit l’utilisateur créé via findById
+
+FICHIER MIDDLEWARES/AUTHMIDDLEWARE.JS
+
+
+const decoded : 
+- verifie la signature
+- verifie la validitié du token
+- decode le contenu
+
+verification du user meme si token valide
+
+
+FICHIER ROUTES/AUTHROUTES.js
+
+nouveau routeur auth
+
+dans .env ajout de la duree de vie du token (24h)
+
+
+DATABASE/SCHEMA.SQL
+
+remplacement des faux hashes de seed
+
+
+
