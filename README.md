@@ -160,28 +160,20 @@ Kevin a réalisé la mise en place complète du socle du projet :
 
 Les autres fonctionnalités (authentification, gestion des réservations, logique métier, etc.) seront implémentées par les autres membres du groupe.
 
----
+--- 
+Authentification
 
-# Auteur
 
-Kevin
-## Authentication
+L’API utilise JWT (JSON Web Token) pour sécuriser certaines routes.
 
-### Required environment variables
+POST /signup
+Permet de créer un compte utilisateur (rôle client).
 
-```env
-JWT_SECRET=change_this_secret
-JWT_EXPIRES_IN=24h
-```
+Exemple :
 
-### Endpoints
+POST /signup
 
-#### POST /signup
-Create a new client account.
-
-Example body:
-
-```json
+Body :
 {
   "email": "john@example.com",
   "password": "password123",
@@ -189,25 +181,131 @@ Example body:
   "lname": "Doe",
   "phone": "0611223344"
 }
-```
 
-#### POST /login
-Authenticate a user and return a JWT.
+Le mot de passe est hashé avec bcrypt avant d’être enregistré en base.
 
-Example body:
+POST /login
+Permet à un utilisateur de se connecter et d’obtenir un token JWT.
 
-```json
+
+POST /login :
+
+Body :
+
 {
   "email": "john@example.com",
   "password": "password123"
 }
-```
 
-#### GET /me
-Protected route example.
+Réponse :
 
-Header:
+{
+  "token": "JWT_TOKEN"
+}
+GET /me
 
-```http
+Exemple de route protégée permettant de récupérer les informations de l’utilisateur connecté.
+
+Header requis :
+
 Authorization: Bearer <token>
-```
+Gestion des rôles
+
+Deux rôles existent dans le système :
+
+- client 
+- admin
+
+Certaines routes sont réservées aux administrateurs.
+
+Les contrôles d’accès sont réalisés via :
+
+authMiddleware
+requireRole('admin')
+Gestion des réservations (Admin)
+
+Les administrateurs peuvent consulter et valider les réservations.
+
+Ces endpoints nécessitent :
+
+- Authorization: Bearer <token>
+- un utilisateur ayant le rôle admin.
+
+
+GET /reservations
+Permet de récupérer toutes les réservations enregistrées dans le système.
+
+GET /reservations
+
+Exemple de réponse :
+
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "name": "Jean Dupont",
+      "phone": "0600000000",
+      "number_of_people": 4,
+      "reservation_date": "2026-03-20",
+      "reservation_time": "19:30:00",
+      "note": "Table près de la fenêtre",
+      "status": "pending"
+    }
+  ]
+}
+PATCH /reservations/:id/validate
+
+Permet à un administrateur de valider une réservation en attente.
+
+PATCH /reservations/:id/validate
+
+Comportement :
+
+pending → confirmed
+
+Contraintes :
+
+- la réservation doit exister
+
+- une réservation déjà confirmée ne peut plus être modifiée
+
+- une réservation cancelled ne peut pas être confirmée
+
+Exemple de réponse :
+
+{
+  "success": true,
+  "message": "Reservation validated successfully",
+  "data": {
+    "id": 1,
+    "status": "confirmed"
+  }
+}
+Endpoint disponible
+GET /menu
+
+
+Retourne la liste des plats disponibles du restaurant.
+GET /menu
+
+Réponse :
+
+{
+  "success": true,
+  "count": 4,
+  "data": []
+}
+
+#Contribution
+Fonctionnalités implémentées par Adam : 
+
+- authentification utilisateur (signup / login)
+- génération et vérification de JWT
+- gestion des rôles client / admin
+- protection des routes via middleware
+- consultation des réservations (admin)
+- validation des réservations (admin)
+
