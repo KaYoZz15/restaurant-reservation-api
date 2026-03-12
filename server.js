@@ -11,7 +11,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use('/', reservationRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -21,6 +20,7 @@ app.get('/', (req, res) => {
 
 app.use('/menu', menuRoutes);
 app.use('/', authRoutes);
+app.use('/', reservationRoutes);
 
 async function startServer() {
   try {

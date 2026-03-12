@@ -1,21 +1,42 @@
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel');
 
+function extractBearerToken(authorizationHeader) {
+  if (!authorizationHeader || typeof authorizationHeader !== 'string') {
+    return null;
+  }
+
+  const [scheme, token] = authorizationHeader.split(' ');
+
+  if (!scheme || scheme.toLowerCase() !== 'bearer' || !token) {
+    return null;
+  }
+
+  return token;
+}
+
 async function authMiddleware(req, res, next) {
   try {
-    const authHeader = req.headers.authorization;
+    const token = extractBearerToken(req.headers.authorization);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: 'Access denied. A valid Bearer token is required',
       });
     }
 
-    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = Number(decoded.id || decoded.userId || decoded.sub);
 
-    const user = await userModel.findById(decoded.id);
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token',
+      });
+    }
+
+    const user = await userModel.findById(userId);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -70,5 +91,6 @@ function requireRole(...allowedRoles) {
 
 module.exports = {
   authMiddleware,
+  authenticate: authMiddleware,
   requireRole,
 };
