@@ -1,3 +1,4 @@
+
 # Restaurant Reservation API
 
 API REST développée avec **Node.js**, **Express** et **MySQL** permettant de gérer les réservations d’un restaurant.
@@ -160,7 +161,7 @@ Kevin a réalisé la mise en place complète du socle du projet :
 
 Les autres fonctionnalités (authentification, gestion des réservations, logique métier, etc.) seront implémentées par les autres membres du groupe.
 
---- 
+---
 
 # Auth/Admin (Adam)
 
@@ -176,7 +177,7 @@ L’API utilise **JWT (JSON Web Token)** pour sécuriser certaines routes.
 
 Permet de créer un compte utilisateur avec le rôle **client**.
 
-#### Exemple de requête
+### Exemple de requête
 
 ```json
 POST /signup
@@ -200,7 +201,7 @@ Le mot de passe est **hashé avec bcrypt** avant d’être enregistré en base d
 
 Permet à un utilisateur de se connecter et d’obtenir un **token JWT**.
 
-#### Body
+### Body
 
 ```json
 {
@@ -209,7 +210,7 @@ Permet à un utilisateur de se connecter et d’obtenir un **token JWT**.
 }
 ```
 
-#### Réponse
+### Réponse
 
 ```json
 {
@@ -225,7 +226,7 @@ Permet à un utilisateur de se connecter et d’obtenir un **token JWT**.
 
 Permet de récupérer les informations de l’utilisateur connecté.
 
-#### Header requis
+Header requis :
 
 ```
 Authorization: Bearer <JWT_TOKEN>
@@ -266,7 +267,7 @@ Ces endpoints nécessitent :
 
 Permet de récupérer toutes les réservations enregistrées dans le système.
 
-#### Exemple de réponse
+### Exemple de réponse
 
 ```json
 {
@@ -296,19 +297,19 @@ Permet de récupérer toutes les réservations enregistrées dans le système.
 
 Permet à un administrateur de **valider une réservation en attente**.
 
-#### Comportement
+### Comportement
 
 ```
 pending → confirmed
 ```
 
-#### Contraintes
+### Contraintes
 
 - la réservation doit exister
 - une réservation déjà **confirmée** ne peut plus être modifiée
 - une réservation **cancelled** ne peut pas être confirmée
 
-#### Exemple de réponse
+### Exemple de réponse
 
 ```json
 {
@@ -323,6 +324,58 @@ pending → confirmed
 
 ---
 
+# Gestion des réservations (Client) — Arthur
+
+Les utilisateurs authentifiés peuvent **créer, consulter, modifier et annuler leurs réservations**.
+
+Tous les endpoints nécessitent :
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+## POST `/reservations`
+
+Créer une réservation.
+
+```json
+{
+  "name": "Jean Dupont",
+  "phone": "0611223344",
+  "number_of_people": 4,
+  "reservation_date": "2026-03-20",
+  "reservation_time": "20:00",
+  "note": "Table proche fenetre"
+}
+```
+
+---
+
+## GET `/my-reservations`
+
+Retourne toutes les réservations de l'utilisateur connecté.
+
+---
+
+## PUT `/reservations/:id`
+
+Modifier une réservation.
+
+Conditions :
+
+- la réservation doit appartenir à l'utilisateur
+- le statut doit être **pending**
+
+---
+
+## DELETE `/reservations/:id`
+
+Annuler une réservation.
+
+---
+
 # Contribution
 
 ## Fonctionnalités implémentées par Adam
@@ -333,3 +386,16 @@ pending → confirmed
 - protection des routes via **middleware**
 - consultation des réservations (**admin**)
 - validation des réservations (**admin**)
+
+---
+
+## Fonctionnalités implémentées par Arthur
+
+- implémentation des endpoints **POST /reservations**
+- implémentation de **GET /my-reservations**
+- implémentation de **PUT /reservations/:id**
+- implémentation de **DELETE /reservations/:id**
+- vérification de la **capacité du restaurant**
+- **attribution automatique des tables**
+- vérification du **propriétaire de la réservation**
+- modification autorisée uniquement si la réservation est **pending**
