@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const reservationModel = require('../models/reservationModel');
+const availabilityModel = require('../models/availabilityModel');
 
 function isValidDate(value) {
   if (typeof value !== 'string') {
@@ -163,6 +164,22 @@ async function createReservation(req, res) {
 
   try {
     const { name, phone, numberOfPeople, reservationDate, reservationTime, note } = validation.data;
+
+    const openingData = await availabilityModel.getOpenSlotsForDate(reservationDate);
+
+    if (openingData.isClosed) {
+      return res.status(409).json({
+        success: false,
+        message: 'Restaurant is exceptionally closed on this date'
+      });
+    }
+
+    if (!openingData.slots.includes(reservationTime)) {
+      return res.status(409).json({
+        success: false,
+        message: 'This reservation time is not available for this date'
+      });
+    }
 
     connection = await db.getConnection();
     await connection.beginTransaction();

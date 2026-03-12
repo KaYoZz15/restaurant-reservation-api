@@ -4,6 +4,7 @@ const db = require('./config/database');
 const menuRoutes = require('./routes/menuRoutes');
 const authRoutes = require('./routes/authRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
+const availabilityRoutes = require('./routes/availabilityRoutes');
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 app.use('/menu', menuRoutes);
 app.use('/', authRoutes);
 app.use('/', reservationRoutes);
+app.use('/', availabilityRoutes);
 
 async function startServer() {
   try {

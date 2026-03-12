@@ -37,12 +37,9 @@ async function updateStatus(id, status) {
   return result;
 }
 
-async function findAvailableTablesForSlot(
-  connection,
-  reservationDate,
-  reservationTime,
-  excludedReservationId = null
-) {
+async function findAvailableTablesForSlot(connection, reservationDate, reservationTime, excludedReservationId = null) {
+  const executor = connection || db;
+
   const conflictConditions = [
     'r.reservation_date = ?',
     'r.reservation_time = ?',
@@ -56,22 +53,36 @@ async function findAvailableTablesForSlot(
     queryParams.push(excludedReservationId);
   }
 
-  const [rows] = await connection.query(
+  const sql = `
+    SELECT rt.id, rt.table_number, rt.seats
+    FROM restaurant_tables rt
+    WHERE rt.is_active = TRUE
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reservation_tables rtb
+        INNER JOIN reservations r ON r.id = rtb.reservation_id
+        WHERE rtb.table_id = rt.id
+          AND ${conflictConditions.join('\n          AND ')}
+      )
+    ORDER BY rt.seats ASC, rt.id ASC
+    ${connection ? 'FOR UPDATE' : ''}
+  `;
+
+  const [rows] = await executor.query(sql, queryParams);
+
+  return rows;
+}
+
+async function getReservationsForSlot(date, time) {
+  const [rows] = await db.execute(
     `
-      SELECT rt.id, rt.table_number, rt.seats
-      FROM restaurant_tables rt
-      WHERE rt.is_active = TRUE
-        AND NOT EXISTS (
-          SELECT 1
-          FROM reservation_tables rtb
-          INNER JOIN reservations r ON r.id = rtb.reservation_id
-          WHERE rtb.table_id = rt.id
-            AND ${conflictConditions.join('\n            AND ')}
-        )
-      ORDER BY rt.seats ASC, rt.id ASC
-      FOR UPDATE
+      SELECT id, number_of_people, status
+      FROM reservations
+      WHERE reservation_date = ?
+        AND reservation_time = ?
+        AND status IN ('pending', 'confirmed')
     `,
-    queryParams
+    [date, time]
   );
 
   return rows;
@@ -319,6 +330,7 @@ module.exports = {
   isPositiveInteger,
   findAll,
   findById,
+  getReservationsForSlot,
   updateStatus,
   findAvailableTablesForSlot,
   getTotalSeats,
