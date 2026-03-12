@@ -119,19 +119,36 @@ Réponse :
 }
 ```
 
-## Endpoints réservation (tickets Arthur)
 
-Tous les endpoints ci-dessous nécessitent :
+# API – Gestion des Réservations
+
+Ce projet expose une API permettant aux utilisateurs authentifiés de créer, consulter, modifier et annuler des réservations de tables.
+
+---
+
+# 🔐 Authentification
+
+Tous les endpoints nécessitent un **token JWT** dans le header :
 
 ```
 Authorization: Bearer <token_jwt>
 ```
 
-### POST /reservations
+---
+
+# 👨‍💻 Partie Arthur – Gestion des réservations
+
+Arthur est responsable de l’implémentation des endpoints de réservation ainsi que de la logique métier associée.
+
+---
+
+# 📌 Endpoints réservation
+
+## POST /reservations
 
 Crée une réservation pour l'utilisateur connecté.
 
-Body :
+### Body
 
 ```json
 {
@@ -144,7 +161,7 @@ Body :
 }
 ```
 
-Réponse succès (201) :
+### Réponse succès (201)
 
 ```json
 {
@@ -171,7 +188,7 @@ Réponse succès (201) :
 }
 ```
 
-Réponse erreur capacité (409) :
+### Réponse erreur capacité (409)
 
 ```json
 {
@@ -180,17 +197,19 @@ Réponse erreur capacité (409) :
 }
 ```
 
-### GET /my-reservations
+---
+
+## GET /my-reservations
 
 Retourne toutes les réservations de l'utilisateur connecté.
 
-Exemple :
+### Exemple
 
 ```
 GET http://localhost:3000/my-reservations
 ```
 
-Réponse succès (200) :
+### Réponse succès (200)
 
 ```json
 {
@@ -220,11 +239,18 @@ Réponse succès (200) :
 }
 ```
 
-### PUT /reservations/:id
+---
 
-Modifie une réservation existante (propriétaire uniquement, statut obligatoire : `pending`).
+## PUT /reservations/:id
 
-Body :
+Modifie une réservation existante.
+
+### Conditions
+
+- L’utilisateur doit être **le propriétaire de la réservation**
+- Le statut doit être **pending**
+
+### Body
 
 ```json
 {
@@ -237,7 +263,7 @@ Body :
 }
 ```
 
-Réponse succès (200) :
+### Réponse succès (200)
 
 ```json
 {
@@ -264,11 +290,17 @@ Réponse succès (200) :
 }
 ```
 
-### DELETE /reservations/:id
+---
 
-Annule une réservation existante (propriétaire uniquement).
+## DELETE /reservations/:id
 
-Réponse succès (200) :
+Annule une réservation existante.
+
+### Condition
+
+- L’utilisateur doit être **le propriétaire de la réservation**
+
+### Réponse succès (200)
 
 ```json
 {
@@ -283,55 +315,19 @@ Réponse succès (200) :
 
 ---
 
-# Structure du projet
+# 📦 Contribution
 
-```
-restaurant-reservation-api
-│
-├── config
-│   └── database.js
-│
-├── controllers
-│
-├── models
-│
-├── routes
-│
-├── middlewares
-│
-├── database
-│   └── schema.sql
-│
-├── .env.example
-├── server.js
-└── README.md
-```
+## 👨‍💻 Arthur
 
----
-
-# Contribution
-
-Kevin a réalisé la mise en place complète du socle du projet :
-
-- Initialisation du projet **Node.js / Express**
-- Mise en place de la **structure du projet (architecture MVC)**
-- Configuration de la **connexion MySQL**
-- Création du **schéma SQL de la base de données**
-- Implémentation du premier endpoint API **GET /menu**
-- Mise en place de la **gestion de projet et organisation des tâches avec Jira**
-
-Arthur a réalisé l’implémentation des fonctionnalités de gestion des réservations côté client :
+Arthur a réalisé l’implémentation des fonctionnalités de **gestion des réservations** :
 
 - Mise en place de l’**authentification JWT** sur les endpoints de réservation
 - Implémentation des endpoints **POST /reservations** et **GET /my-reservations**
-- Ajout de la logique métier de **vérification de capacité** et d’**attribution automatique des tables**
 - Implémentation des endpoints **PUT /reservations/:id** et **DELETE /reservations/:id**
-- Ajout des règles de sécurité métier : **vérification du propriétaire** et modification autorisée uniquement en statut **pending**
+- Développement de la logique métier :
+  - **Vérification de capacité du restaurant**
+  - **Attribution automatique des tables**
+- Ajout des règles de sécurité :
+  - **Vérification du propriétaire de la réservation**
+  - Modification autorisée uniquement lorsque le statut est **pending**
 
-D’autres fonctionnalités (authentification complète, gestion avancée des réservations, logique métier, etc.) pourront être implémentées par les autres membres du groupe.
-
----
-
-# Auteur
-
-Arthur
