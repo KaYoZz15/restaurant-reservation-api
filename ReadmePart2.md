@@ -15,7 +15,7 @@ GET /api/availability
 
 ### Exemple de requête
 
-GET http://localhost:3000/api/availability?date=2026-06-20
+GET http://localhost:3000/availability?date=2026-06-20
 
 ### Réponse exemple
 
@@ -45,7 +45,7 @@ GET http://localhost:3000/api/availability?date=2026-06-20
 
 ## Endpoint
 
-POST /api/admin/opening-exceptions/close
+POST admin/opening-exceptions/close
 
 ### Body JSON
 
@@ -87,7 +87,7 @@ Réponse :
 
 ## Endpoint
 
-POST /api/admin/opening-exceptions/slot
+POST admin/opening-exceptions/slot
 
 ### Body JSON
 
@@ -109,7 +109,7 @@ POST /api/admin/opening-exceptions/slot
 
 ### Vérification
 
-GET /api/availability?date=2026-06-20
+GET availability?date=2026-06-20
 
 Réponse exemple :
 
