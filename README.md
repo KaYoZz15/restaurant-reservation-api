@@ -1,8 +1,9 @@
-﻿# Restaurant Reservation API
 
-API REST developpee avec **Node.js**, **Express** et **MySQL** permettant de gerer les reservations d'un restaurant.
+# Restaurant Reservation API
 
-Ce projet est realise dans le cadre d'un travail de groupe et vise a mettre en place une architecture backend propre avec une base de donnees relationnelle et des endpoints REST.
+API REST développée avec **Node.js**, **Express** et **MySQL** permettant de gérer les réservations d’un restaurant.
+
+Ce projet est réalisé dans le cadre d’un travail de groupe et vise à mettre en place une architecture backend propre avec une base de données relationnelle et des endpoints REST.
 
 ---
 
@@ -36,7 +37,7 @@ npm install
 
 # Configuration
 
-Creer un fichier `.env` a la racine du projet.
+Créer un fichier `.env` à la racine du projet.
 
 Exemple :
 
@@ -97,7 +98,7 @@ http://localhost:3000
 
 ---
 
-# Endpoints disponibles
+# Endpoint disponible
 
 ## GET /menu
 
@@ -119,36 +120,225 @@ Réponse :
 }
 ```
 
-
-# API – Gestion des Réservations
-
-Ce projet expose une API permettant aux utilisateurs authentifiés de créer, consulter, modifier et annuler des réservations de tables.
-
 ---
 
-# 🔐 Authentification
-
-Tous les endpoints nécessitent un **token JWT** dans le header :
+# Structure du projet
 
 ```
-Authorization: Bearer <token_jwt>
+restaurant-reservation-api
+│
+├── config
+│   └── database.js
+│
+├── controllers
+│
+├── models
+│
+├── routes
+│
+├── middlewares
+│
+├── database
+│   └── schema.sql
+│
+├── .env.example
+├── server.js
+└── README.md
 ```
 
 ---
 
-# 👨‍💻 Partie Arthur – Gestion des réservations
+# Contribution
 
-Arthur est responsable de l’implémentation des endpoints de réservation ainsi que de la logique métier associée.
+Kevin a réalisé la mise en place complète du socle du projet :
+
+- Initialisation du projet **Node.js / Express**
+- Mise en place de la **structure du projet (architecture MVC)**
+- Configuration de la **connexion MySQL**
+- Création du **schéma SQL de la base de données**
+- Implémentation du premier endpoint API **GET /menu**
+- Mise en place de la **gestion de projet et organisation des tâches avec Jira**
+
+Les autres fonctionnalités (authentification, gestion des réservations, logique métier, etc.) seront implémentées par les autres membres du groupe.
 
 ---
 
-# 📌 Endpoints réservation
+# Auth/Admin (Adam)
 
-## POST /reservations
+## Authentification
 
-Crée une réservation pour l'utilisateur connecté.
+L’API utilise **JWT (JSON Web Token)** pour sécuriser certaines routes.
+
+---
+
+## Inscription
+
+### POST `/signup`
+
+Permet de créer un compte utilisateur avec le rôle **client**.
+
+### Exemple de requête
+
+```json
+POST /signup
+
+{
+  "email": "john@example.com",
+  "password": "password123",
+  "fname": "John",
+  "lname": "Doe",
+  "phone": "0611223344"
+}
+```
+
+Le mot de passe est **hashé avec bcrypt** avant d’être enregistré en base de données.
+
+---
+
+## Connexion
+
+### POST `/login`
+
+Permet à un utilisateur de se connecter et d’obtenir un **token JWT**.
 
 ### Body
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+### Réponse
+
+```json
+{
+  "token": "JWT_TOKEN"
+}
+```
+
+---
+
+## Route protégée
+
+### GET `/me`
+
+Permet de récupérer les informations de l’utilisateur connecté.
+
+Header requis :
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+# Gestion des rôles
+
+Deux rôles existent dans le système :
+
+- `client`
+- `admin`
+
+Certaines routes sont **réservées aux administrateurs**.
+
+Les contrôles d’accès sont réalisés via :
+
+- `authMiddleware`
+- `requireRole('admin')`
+
+---
+
+# Gestion des réservations (Admin)
+
+Les administrateurs peuvent **consulter et valider les réservations**.
+
+Ces endpoints nécessitent :
+
+- Header `Authorization: Bearer <JWT_TOKEN>`
+- Un utilisateur ayant le rôle **admin**
+
+---
+
+## Récupérer toutes les réservations
+
+### GET `/reservations`
+
+Permet de récupérer toutes les réservations enregistrées dans le système.
+
+### Exemple de réponse
+
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "name": "Jean Dupont",
+      "phone": "0600000000",
+      "number_of_people": 4,
+      "reservation_date": "2026-03-20",
+      "reservation_time": "19:30:00",
+      "note": "Table près de la fenêtre",
+      "status": "pending"
+    }
+  ]
+}
+```
+
+---
+
+## Valider une réservation
+
+### PATCH `/reservations/:id/validate`
+
+Permet à un administrateur de **valider une réservation en attente**.
+
+### Comportement
+
+```
+pending → confirmed
+```
+
+### Contraintes
+
+- la réservation doit exister
+- une réservation déjà **confirmée** ne peut plus être modifiée
+- une réservation **cancelled** ne peut pas être confirmée
+
+### Exemple de réponse
+
+```json
+{
+  "success": true,
+  "message": "Reservation validated successfully",
+  "data": {
+    "id": 1,
+    "status": "confirmed"
+  }
+}
+```
+
+---
+
+# Gestion des réservations (Client) — Arthur
+
+Les utilisateurs authentifiés peuvent **créer, consulter, modifier et annuler leurs réservations**.
+
+Tous les endpoints nécessitent :
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+## POST `/reservations`
+
+Créer une réservation.
 
 ```json
 {
@@ -161,173 +351,51 @@ Crée une réservation pour l'utilisateur connecté.
 }
 ```
 
-### Réponse succès (201)
-
-```json
-{
-  "success": true,
-  "message": "Reservation created successfully",
-  "data": {
-    "id": 12,
-    "user_id": 2,
-    "name": "Jean Dupont",
-    "phone": "0611223344",
-    "number_of_people": 4,
-    "reservation_date": "2026-03-20",
-    "reservation_time": "20:00:00",
-    "note": "Table proche fenetre",
-    "status": "pending",
-    "tables": [
-      {
-        "id": 3,
-        "table_number": "T3",
-        "seats": 4
-      }
-    ]
-  }
-}
-```
-
-### Réponse erreur capacité (409)
-
-```json
-{
-  "success": false,
-  "message": "Not enough capacity for this date and time"
-}
-```
-
 ---
 
-## GET /my-reservations
+## GET `/my-reservations`
 
 Retourne toutes les réservations de l'utilisateur connecté.
 
-### Exemple
+---
 
-```
-GET http://localhost:3000/my-reservations
-```
+## PUT `/reservations/:id`
 
-### Réponse succès (200)
+Modifier une réservation.
 
-```json
-{
-  "success": true,
-  "count": 2,
-  "data": [
-    {
-      "id": 12,
-      "user_id": 2,
-      "name": "Jean Dupont",
-      "phone": "0611223344",
-      "number_of_people": 4,
-      "reservation_date": "2026-03-20T00:00:00.000Z",
-      "reservation_time": "20:00:00",
-      "note": "Table proche fenetre",
-      "status": "pending",
-      "created_at": "2026-03-11T18:40:12.000Z",
-      "tables": [
-        {
-          "id": 3,
-          "table_number": "T3",
-          "seats": 4
-        }
-      ]
-    }
-  ]
-}
-```
+Conditions :
+
+- la réservation doit appartenir à l'utilisateur
+- le statut doit être **pending**
 
 ---
 
-## PUT /reservations/:id
+## DELETE `/reservations/:id`
 
-Modifie une réservation existante.
-
-### Conditions
-
-- L’utilisateur doit être **le propriétaire de la réservation**
-- Le statut doit être **pending**
-
-### Body
-
-```json
-{
-  "name": "Jean Dupont",
-  "phone": "0611223344",
-  "number_of_people": 2,
-  "reservation_date": "2026-03-21",
-  "reservation_time": "19:30",
-  "note": "Mise a jour de la reservation"
-}
-```
-
-### Réponse succès (200)
-
-```json
-{
-  "success": true,
-  "message": "Reservation updated successfully",
-  "data": {
-    "id": 12,
-    "user_id": 2,
-    "name": "Jean Dupont",
-    "phone": "0611223344",
-    "number_of_people": 2,
-    "reservation_date": "2026-03-21",
-    "reservation_time": "19:30:00",
-    "note": "Mise a jour de la reservation",
-    "status": "pending",
-    "tables": [
-      {
-        "id": 1,
-        "table_number": "T1",
-        "seats": 2
-      }
-    ]
-  }
-}
-```
+Annuler une réservation.
 
 ---
 
-## DELETE /reservations/:id
+# Contribution
 
-Annule une réservation existante.
+## Fonctionnalités implémentées par Adam
 
-### Condition
-
-- L’utilisateur doit être **le propriétaire de la réservation**
-
-### Réponse succès (200)
-
-```json
-{
-  "success": true,
-  "message": "Reservation cancelled successfully",
-  "data": {
-    "id": 12,
-    "status": "cancelled"
-  }
-}
-```
+- authentification utilisateur (`signup` / `login`)
+- génération et vérification de **JWT**
+- gestion des rôles **client / admin**
+- protection des routes via **middleware**
+- consultation des réservations (**admin**)
+- validation des réservations (**admin**)
 
 ---
 
-# 📦 Contribution
+## Fonctionnalités implémentées par Arthur
 
-## 👨‍💻 Arthur
-
-Arthur a réalisé l’implémentation des fonctionnalités de **gestion des réservations** :
-
-- Mise en place de l’**authentification JWT** sur les endpoints de réservation
-- Implémentation des endpoints **POST /reservations** et **GET /my-reservations**
-- Implémentation des endpoints **PUT /reservations/:id** et **DELETE /reservations/:id**
-- Développement de la logique métier :
-  - **Vérification de capacité du restaurant**
-  - **Attribution automatique des tables**
-- Ajout des règles de sécurité :
-  - **Vérification du propriétaire de la réservation**
-  - Modification autorisée uniquement lorsque le statut est **pending**
-
+- implémentation des endpoints **POST /reservations**
+- implémentation de **GET /my-reservations**
+- implémentation de **PUT /reservations/:id**
+- implémentation de **DELETE /reservations/:id**
+- vérification de la **capacité du restaurant**
+- **attribution automatique des tables**
+- vérification du **propriétaire de la réservation**
+- modification autorisée uniquement si la réservation est **pending**
