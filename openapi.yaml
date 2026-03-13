@@ -1,0 +1,952 @@
+openapi: 3.0.3
+
+info:
+  title: Restaurant Reservation API
+  version: 1.0.0
+  description: API REST de gestion des réservations d'un restaurant
+
+servers:
+  - url: http://localhost:3000
+    description: Local server
+
+tags:
+  - name: Root
+  - name: Auth
+  - name: Menu
+  - name: Availability
+  - name: Reservations
+  - name: Admin
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Internal server error
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        fname:
+          type: string
+          example: John
+        lname:
+          type: string
+          example: Doe
+        phone:
+          type: string
+          example: "0611223344"
+        role:
+          type: string
+          enum: [admin, client]
+          example: client
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - password
+        - fname
+        - lname
+        - phone
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          minLength: 6
+          example: password123
+        fname:
+          type: string
+          example: John
+        lname:
+          type: string
+          example: Doe
+        phone:
+          type: string
+          example: "0611223344"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          example: password123
+
+    SignupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User account created successfully
+        data:
+          $ref: '#/components/schemas/User'
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login successful
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        data:
+          $ref: '#/components/schemas/User'
+
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Burger Maison
+        description:
+          type: string
+          example: Burger avec steak et fromage
+        price:
+          type: number
+          format: float
+          example: 15.5
+        category:
+          type: string
+          enum: [starter, main, dessert, drink]
+          example: main
+        image:
+          type: string
+          nullable: true
+          example: null
+        is_available:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+
+    MenuResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+          example: 4
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'
+
+    AvailabilitySlot:
+      type: object
+      properties:
+        time:
+          type: string
+          example: "12:00:00"
+        available:
+          type: boolean
+          example: true
+        available_tables:
+          type: integer
+          example: 5
+
+    AvailabilityOpenResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        date:
+          type: string
+          format: date
+          example: 2026-06-20
+        is_closed:
+          type: boolean
+          example: false
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailabilitySlot'
+
+    AvailabilityClosedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        date:
+          type: string
+          format: date
+          example: 2026-06-20
+        is_closed:
+          type: boolean
+          example: true
+        reason:
+          type: string
+          nullable: true
+          example: Maintenance cuisine
+        slots:
+          type: array
+          items: {}
+          example: []
+
+    ReservationTable:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        table_number:
+          type: string
+          example: T3
+        seats:
+          type: integer
+          example: 4
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: John Doe
+        phone:
+          type: string
+          example: "0611223344"
+        number_of_people:
+          type: integer
+          example: 4
+        reservation_date:
+          type: string
+          format: date
+          example: 2026-06-20
+        reservation_time:
+          type: string
+          example: "19:00:00"
+        note:
+          type: string
+          nullable: true
+          example: Table près de la fenêtre
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+          example: pending
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReservationTable'
+
+    ReservationRequest:
+      type: object
+      required:
+        - name
+        - phone
+        - number_of_people
+        - reservation_date
+        - reservation_time
+      properties:
+        name:
+          type: string
+          example: John Doe
+        phone:
+          type: string
+          example: "0611223344"
+        number_of_people:
+          type: integer
+          minimum: 1
+          example: 4
+        reservation_date:
+          type: string
+          format: date
+          example: 2026-06-20
+        reservation_time:
+          type: string
+          example: "19:00"
+        note:
+          type: string
+          nullable: true
+          example: Table près de la fenêtre
+
+    ReservationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Reservation created successfully
+        data:
+          $ref: '#/components/schemas/Reservation'
+
+    ReservationListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+          example: 2
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Invalid reservation payload
+        errors:
+          type: array
+          items:
+            type: string
+          example:
+            - name is required
+            - reservation_date must follow YYYY-MM-DD format
+
+    CloseDateRequest:
+      type: object
+      required:
+        - date
+      properties:
+        date:
+          type: string
+          format: date
+          example: 2026-06-20
+        reason:
+          type: string
+          nullable: true
+          example: Maintenance cuisine
+
+    ExceptionalSlotRequest:
+      type: object
+      required:
+        - date
+        - slot_time
+      properties:
+        date:
+          type: string
+          format: date
+          example: 2026-06-20
+        slot_time:
+          type: string
+          example: "22:00"
+
+    SimpleSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operation completed successfully
+
+paths:
+  /:
+    get:
+      tags: [Root]
+      summary: Vérifier que l'API fonctionne
+      security: []
+      responses:
+        '200':
+          description: API en ligne
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Restaurant Reservation API is running
+
+  /signup:
+    post:
+      tags: [Auth]
+      summary: Créer un compte utilisateur
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email déjà utilisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /login:
+    post:
+      tags: [Auth]
+      summary: Connecter un utilisateur
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Email ou mot de passe manquant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /me:
+    get:
+      tags: [Auth]
+      summary: Récupérer l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Utilisateur authentifié
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Token manquant, invalide ou expiré
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /menu:
+    get:
+      tags: [Menu]
+      summary: Récupérer le menu disponible
+      security: []
+      responses:
+        '200':
+          description: Liste des plats disponibles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /availability:
+    get:
+      tags: [Availability]
+      summary: Vérifier les disponibilités pour une date
+      security: []
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: Date au format YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+            example: 2026-06-20
+      responses:
+        '200':
+          description: Disponibilités retournées
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AvailabilityOpenResponse'
+                  - $ref: '#/components/schemas/AvailabilityClosedResponse'
+        '400':
+          description: Date invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reservations:
+    get:
+      tags: [Admin]
+      summary: Récupérer toutes les réservations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste complète des réservations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationListResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès réservé aux admins
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags: [Reservations]
+      summary: Créer une réservation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        '201':
+          description: Réservation créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '400':
+          description: Payload invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflit de disponibilité ou capacité insuffisante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reservations/{id}:
+    put:
+      tags: [Reservations]
+      summary: Modifier une réservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        '200':
+          description: Réservation modifiée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '400':
+          description: ID ou payload invalide
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Réservation introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Réservation non modifiable ou capacité insuffisante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Reservations]
+      summary: Annuler une réservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Réservation annulée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Reservation cancelled successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      status:
+                        type: string
+                        example: cancelled
+        '400':
+          description: ID invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Réservation introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /my-reservations:
+    get:
+      tags: [Reservations]
+      summary: Récupérer les réservations de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des réservations de l'utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationListResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reservations/{id}/validate:
+    patch:
+      tags: [Admin]
+      summary: Valider une réservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Réservation validée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Reservation validated successfully
+                  data:
+                    $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Réservation déjà confirmée ou annulée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès réservé aux admins
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Réservation introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/opening-exceptions/close:
+    post:
+      tags: [Admin]
+      summary: Fermer exceptionnellement une date
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseDateRequest'
+      responses:
+        '200':
+          description: Fermeture enregistrée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SimpleSuccessResponse'
+                  - type: object
+                    properties:
+                      message:
+                        example: Closure exception saved successfully
+        '400':
+          description: Date invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès réservé aux admins
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/opening-exceptions/slot:
+    post:
+      tags: [Admin]
+      summary: Ajouter un créneau exceptionnel
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExceptionalSlotRequest'
+      responses:
+        '200':
+          description: Créneau enregistré
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SimpleSuccessResponse'
+                  - type: object
+                    properties:
+                      message:
+                        example: Exceptional slot saved successfully
+        '400':
+          description: Date ou heure invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès réservé aux admins
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
