@@ -228,6 +228,31 @@ async function getReservationByIdAndUser(connection, reservationId, userId, lock
   return rows[0] || null;
 }
 
+async function getReservationById(connection, reservationId, lockForUpdate = false) {
+  const [rows] = await connection.query(
+    `
+      SELECT
+        id,
+        user_id,
+        name,
+        phone,
+        number_of_people,
+        reservation_date,
+        reservation_time,
+        note,
+        status,
+        created_at
+      FROM reservations
+      WHERE id = ?
+      LIMIT 1
+      ${lockForUpdate ? 'FOR UPDATE' : ''}
+    `,
+    [reservationId]
+  );
+
+  return rows[0] || null;
+}
+
 async function updateReservation(connection, reservationId, reservationData) {
   const {
     name,
@@ -338,6 +363,7 @@ module.exports = {
   createReservation,
   assignTablesToReservation,
   clearTablesForReservation,
+  getReservationById,
   getReservationByIdAndUser,
   updateReservation,
   cancelReservation,

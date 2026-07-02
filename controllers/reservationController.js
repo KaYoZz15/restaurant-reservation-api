@@ -419,12 +419,18 @@ async function cancelReservation(req, res) {
     connection = await db.getConnection();
     await connection.beginTransaction();
 
-    const existingReservation = await reservationModel.getReservationByIdAndUser(
-      connection,
-      reservationId,
-      req.user.id,
-      true
-    );
+    const existingReservation = req.user.role === 'admin'
+      ? await reservationModel.getReservationById(
+        connection,
+        reservationId,
+        true
+      )
+      : await reservationModel.getReservationByIdAndUser(
+        connection,
+        reservationId,
+        req.user.id,
+        true
+      );
 
     if (!existingReservation) {
       await connection.rollback();
