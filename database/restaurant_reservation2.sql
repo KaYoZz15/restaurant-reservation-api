@@ -225,7 +225,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `email`, `password_hash`, `fname`, `lname`, `phone`, `role`, `created_at`, `updated_at`) VALUES
 (1, 'admin@restaurant.com', 'hashedpassword', 'Admin', 'Restaurant', '0600000000', 'admin', '2026-03-10 08:28:46', '2026-03-10 08:28:46'),
 (2, 'client@test.com', 'hashedpassword', 'Jean', 'Dupont', '0611223344', 'client', '2026-03-10 08:28:46', '2026-03-10 08:28:46'),
-(3, 'john@example.com', '$2a$10$D9h.j4HbXRvft2jtsSmRL.T4GH6lF0OfpOOMXgLKiqDCyD1wUo4w.', 'John', 'Doe', '0611223344', 'client', '2026-03-11 16:53:50', '2026-03-12 07:10:31');
+(3, 'john@example.com', '$2a$10$D9h.j4HbXRvft2jtsSmRL.T4GH6lF0OfpOOMXgLKiqDCyD1wUo4w.', 'John', 'Doe', '0611223344', 'admin', '2026-03-11 16:53:50', '2026-03-12 07:10:31');
 
 --
 -- Index pour les tables déchargées
